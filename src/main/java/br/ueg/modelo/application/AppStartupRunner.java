@@ -30,6 +30,8 @@ public class AppStartupRunner implements ApplicationRunner {
 
     public static final String NONE="none";
     public static final String CREATE_DROP="create-drop";
+    public static final String CREATE = "create";
+    public static final String UPDATE = "update";
 
     private static final Logger LOG =
             LoggerFactory.getLogger(AppStartupRunner.class);
@@ -53,7 +55,10 @@ public class AppStartupRunner implements ApplicationRunner {
                 args.getOptionNames());
         LOG.info("spring.jpa.hibernate.ddl-auto={}",ddlAuto);
 
-        if(this.ddlAuto.equals(CREATE_DROP.trim())){
+        if(this.ddlAuto.trim().equals(CREATE_DROP) ||
+                this.ddlAuto.trim().equals(CREATE) ||
+                this.ddlAuto.trim().equals(UPDATE)
+        ){
             this.initiateDemoInstance();
         }
     }
@@ -66,6 +71,10 @@ public class AppStartupRunner implements ApplicationRunner {
 
         Grupo grupo = createGrupoAdmin(moduloUsuario, moduloGrupo);
 
+        createUsuarioAdmin(grupo);
+    }
+
+    private void createUsuarioAdmin(Grupo grupo) {
         Usuario usuario = new Usuario();
         usuario.setStatus(StatusAtivoInativo.ATIVO);
         usuario.setDataCadastrado(LocalDate.now());
@@ -115,11 +124,19 @@ public class AppStartupRunner implements ApplicationRunner {
         moduloUsuario = moduloRepository.save(moduloUsuario);
 
         final Modulo lModuloUsuario = moduloUsuario;
-        moduloUsuario.setFuncionalidades(
-                getFuncionalidadesCrud().stream().map(funcionalidade -> {
+        Set<Funcionalidade> funcionaldiades = getFuncionalidadesCrud();
+
+/*        funcionaldiades.stream().map(
+                funcionalidade -> {
                     funcionalidade.setModulo(lModuloUsuario);
                     return funcionalidade;
-                }).collect(Collectors.toSet()));
+                }).collect(Collectors.toSet());
+        // equivalente com for*/
+        for(Funcionalidade funcionalidade: funcionaldiades){
+            funcionalidade.setModulo(moduloUsuario);
+        }
+
+        moduloUsuario.setFuncionalidades(funcionaldiades);
         moduloUsuario = moduloRepository.save(moduloUsuario);
         return moduloUsuario;
     }
