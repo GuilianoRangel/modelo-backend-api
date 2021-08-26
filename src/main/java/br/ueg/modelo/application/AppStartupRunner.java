@@ -16,7 +16,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -69,7 +71,7 @@ public class AppStartupRunner implements ApplicationRunner {
 
         Modulo moduloGrupo = createModuloCrud("GRUPO", "Manter Grupo");
 
-        Grupo grupo = createGrupoAdmin(moduloUsuario, moduloGrupo);
+        Grupo grupo = createGrupoAdmin(Arrays.asList(moduloUsuario, moduloGrupo));
 
         createUsuarioAdmin(grupo);
     }
@@ -94,7 +96,7 @@ public class AppStartupRunner implements ApplicationRunner {
         usuario = usuarioRepository.save(usuario);
     }
 
-    private Grupo createGrupoAdmin(Modulo moduloUsuario, Modulo moduloGrupo) {
+    private Grupo createGrupoAdmin(List<Modulo> modulos) {
         Grupo grupo = new Grupo();
         grupo.setNome("Administradores");
         grupo.setAdministrador(StatusSimNao.SIM);
@@ -102,14 +104,15 @@ public class AppStartupRunner implements ApplicationRunner {
         grupo.setStatus(StatusAtivoInativo.ATIVO);
         grupo = grupoRepository.save(grupo);
         final Grupo lGrupo = grupo;
-        grupo.setGrupoFuncionalidades(moduloUsuario.getFuncionalidades().stream().map(
-                (funcionalidade) ->
-                        new GrupoFuncionalidade(null, lGrupo,funcionalidade)).collect(Collectors.toSet())
-        );
-        grupo.getGrupoFuncionalidades().addAll(moduloGrupo.getFuncionalidades().stream().map(
-                (funcionalidade) ->
-                        new GrupoFuncionalidade(null, lGrupo, funcionalidade)).collect(Collectors.toSet())
-        );
+        grupo.setGrupoFuncionalidades(new HashSet<>());
+
+        modulos.forEach(modulo -> {
+            lGrupo.getGrupoFuncionalidades().addAll(
+                    modulo.getFuncionalidades().stream().map(
+                            funcionalidade -> new GrupoFuncionalidade(null, lGrupo, funcionalidade)
+                    ).collect(Collectors.toSet())
+            );
+        });
 
         grupoRepository.save(grupo);
         return grupo;
