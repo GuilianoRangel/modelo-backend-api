@@ -71,9 +71,45 @@ public class AppStartupRunner implements ApplicationRunner {
 
         Modulo moduloGrupo = createModuloCrud("GRUPO", "Manter Grupo");
 
-        Grupo grupo = createGrupoAdmin(Arrays.asList(moduloUsuario, moduloGrupo));
+        Modulo moduloTipoAmigo = createModuloTipoAmigo();
+
+        Grupo grupo = createGrupoAdmin(Arrays.asList(moduloUsuario, moduloGrupo,moduloTipoAmigo));
 
         createUsuarioAdmin(grupo);
+    }
+
+    /**
+     * Cria o Modulo de tipo de amigo e salva.
+     * @return tipo amigo salvo no banco.
+     */
+    private Modulo createModuloTipoAmigo() {
+        Modulo moduloTipoAmigo = new Modulo();
+
+        moduloTipoAmigo.setMnemonico("TIPOAMIGO");
+        moduloTipoAmigo.setNome("Manter Tipo Amigo ");
+        moduloTipoAmigo.setStatus(StatusAtivoInativo.ATIVO);
+        moduloTipoAmigo = moduloRepository.save(moduloTipoAmigo);
+
+        Set<Funcionalidade> funcionalidades = getFuncionalidadesCrud().stream()
+                .filter(
+                        funcionalidade -> !funcionalidade.getMnemonico().equals("ATIVAR_INATIVAR")
+                ).collect(Collectors.toSet());
+
+        Funcionalidade fManter = new Funcionalidade();
+        fManter.setMnemonico("REMOVER");
+        fManter.setNome("Remover");
+        fManter.setStatus(StatusAtivoInativo.ATIVO);
+        funcionalidades.add(fManter);
+
+
+        for(Funcionalidade funcionalidade: funcionalidades){
+            funcionalidade.setModulo(moduloTipoAmigo);
+        }
+
+        moduloTipoAmigo.setFuncionalidades(funcionalidades);
+        moduloTipoAmigo = moduloRepository.save(moduloTipoAmigo);
+
+        return moduloTipoAmigo;
     }
 
     private void createUsuarioAdmin(Grupo grupo) {
