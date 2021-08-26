@@ -143,7 +143,7 @@ public class TipoAmigoService {
      * @param tipoAmigo
      */
     private void validarDuplicidade(final TipoAmigo tipoAmigo) {
-        Long count = tipoAmigoRepository.countByNome(tipoAmigo.getNome());
+        Long count = tipoAmigoRepository.countByNomeAndNotId(tipoAmigo.getNome(), tipoAmigo.getId());
 
         if (count > BigDecimal.ZERO.longValue()) {
             throw new BusinessException(SistemaMessageCode.ERRO_TIPO_AMIGO_DUPLICADO);

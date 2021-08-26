@@ -20,10 +20,16 @@ import java.util.List;
 public interface TipoAmigoRepository extends JpaRepository<TipoAmigo, Long>, TipoAmigoRepositoryCustom{
 
     /**
-     * Retorna o total de TipoAmigo com o mesmo nome.
+     * Retorna o número de {@link TipoAmigo} pelo 'nome' , desconsiderando o
+     * 'TipoAmigo' com o 'id' informado.
+     *
      * @param nome
+     * @param idTipoAmigo
      * @return
      */
-    public Long countByNome(String nome);
+    @Query("SELECT COUNT(tipoAmigo) FROM TipoAmigo tipoAmigo " +
+            " WHERE lower(tipoAmigo.nome) LIKE lower(:nome)" +
+            " AND (:idTipoAmigo IS NULL OR tipoAmigo.id != :idTipoAmigo)")
+    public Long countByNomeAndNotId(String nome, Long idTipoAmigo);
 
 }
