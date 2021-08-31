@@ -3,9 +3,7 @@ package br.ueg.modelo.application;
 import br.ueg.modelo.application.enums.StatusAtivoInativo;
 import br.ueg.modelo.application.enums.StatusSimNao;
 import br.ueg.modelo.application.model.*;
-import br.ueg.modelo.application.repository.GrupoRepository;
-import br.ueg.modelo.application.repository.ModuloRepository;
-import br.ueg.modelo.application.repository.UsuarioRepository;
+import br.ueg.modelo.application.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +49,12 @@ public class AppStartupRunner implements ApplicationRunner {
     @Autowired
     UsuarioRepository usuarioRepository;
 
+    @Autowired
+    TipoAmigoRepository tipoAmigoRepository;
+
+    @Autowired
+    AmigoRepository amigoRepository;
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
         LOG.info("Application started with option names : {}",
@@ -73,9 +77,59 @@ public class AppStartupRunner implements ApplicationRunner {
 
         Modulo moduloTipoAmigo = createModuloTipoAmigo();
 
-        Grupo grupo = createGrupoAdmin(Arrays.asList(moduloUsuario, moduloGrupo,moduloTipoAmigo));
+        Modulo moduloAmigo = createModuloAmigo();
+
+        Grupo grupo = createGrupoAdmin(Arrays.asList(moduloUsuario, moduloGrupo,moduloTipoAmigo, moduloAmigo));
 
         createUsuarioAdmin(grupo);
+
+        createTipoAmigos();
+        createAmigos();
+    }
+
+    /**
+     * cria dados de amigo para tese
+     */
+    private void createAmigos() {
+
+        TipoAmigo tipoAmigo = tipoAmigoRepository.findById(1L).get();
+        TipoAmigo tipoConhecido = tipoAmigoRepository.findById(2L).get();
+
+        Amigo amigo = new Amigo();
+        amigo.setAmigo(StatusSimNao.SIM);
+        amigo.setDataAmizade(LocalDate.now());
+        amigo.setNome("Primeiro Amigo");
+        amigo.setTipo(tipoAmigo);
+
+        amigoRepository.save(amigo);
+
+        Amigo conhecido = new Amigo();
+        conhecido.setAmigo(StatusSimNao.SIM);
+        conhecido.setDataAmizade(LocalDate.now());
+        conhecido.setNome("Primeiro Conhecido");
+        conhecido.setTipo(tipoConhecido);
+
+        amigoRepository.save(conhecido);
+
+
+
+    }
+
+    /**
+     * Cria dados de tipos de amigos para teste
+     */
+    private void createTipoAmigos() {
+        TipoAmigo tipoAmigo=new TipoAmigo();
+        tipoAmigo.setNome("Amigo");
+        tipoAmigoRepository.save(tipoAmigo);
+
+        TipoAmigo tipoConhecido = new TipoAmigo();
+        tipoConhecido.setNome("Conhecido");
+        tipoAmigoRepository.save(tipoConhecido);
+
+        TipoAmigo tipoMelhorAmigo = new TipoAmigo();
+        tipoMelhorAmigo.setNome("Melhor Amigo");
+        tipoAmigoRepository.save(tipoMelhorAmigo);
     }
 
     /**
@@ -110,6 +164,46 @@ public class AppStartupRunner implements ApplicationRunner {
         moduloTipoAmigo = moduloRepository.save(moduloTipoAmigo);
 
         return moduloTipoAmigo;
+    }
+
+    /**
+     * Cria o Modulo de amigo e salva.
+     * @return tipo amigo salvo no banco.
+     */
+    private Modulo createModuloAmigo() {
+        Modulo moduloAmigo = new Modulo();
+
+        moduloAmigo.setMnemonico("AMIGO");
+        moduloAmigo.setNome("Manter Amigo ");
+        moduloAmigo.setStatus(StatusAtivoInativo.ATIVO);
+        moduloAmigo = moduloRepository.save(moduloAmigo);
+
+        Set<Funcionalidade> funcionalidades = getFuncionalidadesCrud().stream()
+                .filter(
+                        funcionalidade -> !funcionalidade.getMnemonico().equals("ATIVAR_INATIVAR")
+                ).collect(Collectors.toSet());
+
+        Funcionalidade fManter = new Funcionalidade();
+        fManter.setMnemonico("REMOVER");
+        fManter.setNome("Remover");
+        fManter.setStatus(StatusAtivoInativo.ATIVO);
+        funcionalidades.add(fManter);
+
+        Funcionalidade fAmigo = new Funcionalidade();
+        fAmigo.setMnemonico("STATUS");
+        fAmigo.setNome("É Amigo");
+        fAmigo.setStatus(StatusAtivoInativo.ATIVO);
+        funcionalidades.add(fAmigo);
+
+
+        for(Funcionalidade funcionalidade: funcionalidades){
+            funcionalidade.setModulo(moduloAmigo);
+        }
+
+        moduloAmigo.setFuncionalidades(funcionalidades);
+        moduloAmigo = moduloRepository.save(moduloAmigo);
+
+        return moduloAmigo;
     }
 
     private void createUsuarioAdmin(Grupo grupo) {
