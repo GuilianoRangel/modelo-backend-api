@@ -80,19 +80,6 @@ public class UsuarioServiceTest {
 
 	/**
 	 * Teste do método que persiste os dados do {@link Usuario}.
-	 * Caso em que o Usuário não é encontrado no AD.
-	 */
-	@Test(expected = BusinessException.class)
-	public void salvarInclusaoUsuarioNaoEncontradoAD() {
-		Usuario usuario = getUsuarioNovoMock();
-		usuario.setId(null);
-
-		when(usuarioRepository.countByCpf(usuario.getCpf())).thenReturn(0L);
-		usuarioService.salvar(usuario);
-	}
-
-	/**
-	 * Teste do método que persiste os dados do {@link Usuario}.
 	 * Caso de Inclusão em que o Código do KeyCloak já está cadastrado.
 	 */
 	@Test(expected = BusinessException.class)
@@ -100,7 +87,7 @@ public class UsuarioServiceTest {
 		Usuario usuario = getUsuarioNovoMock();
 		usuario.setId(null);
 
-		when(usuarioRepository.countByCpf(usuario.getCpf())).thenReturn(0L);
+		when(usuarioRepository.countByCpf(usuario.getCpf())).thenReturn(1L);
 		usuarioService.salvar(usuario);
 	}
 
@@ -322,7 +309,7 @@ public class UsuarioServiceTest {
 		UsuarioSenhaDTO usuarioSenhaDTO = new UsuarioSenhaDTO();
 		usuarioSenhaDTO.setNovaSenha("password");
 		usuarioSenhaDTO.setConfirmarSenha("password");
-		usuarioSenhaDTO.setSenhaAntiga("oldPassword");
+		usuarioSenhaDTO.setSenhaAntiga("");
 		usuarioSenhaDTO.setTipo(UsuarioSenhaDTO.TipoRedefinicaoSenha.alteracao);
 
 		Usuario usuario = getUsuarioNovoMock();
@@ -556,6 +543,7 @@ public class UsuarioServiceTest {
 		usuario.setNome("Nome do Usuário");
 		usuario.setLogin("user.name");
 		usuario.setCpf("12345678901");
+		usuario.setSenha("oldPassword");
 
 		UsuarioGrupo usuarioGrupo = new UsuarioGrupo();
 		Set<UsuarioGrupo> grupos = new HashSet<UsuarioGrupo>();

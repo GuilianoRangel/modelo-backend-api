@@ -105,7 +105,9 @@ public class UsuarioService {
 	private void validarUsuarioDuplicadoPorCpf(final Usuario usuario) {
 		Long count = usuarioRepository.countByCpf(usuario.getCpf());
 
-		if (count > BigDecimal.ONE.longValue()) {
+		if ( (count > BigDecimal.ONE.longValue() && usuario.getId()!=null) ||
+				(count > BigDecimal.ZERO.longValue() && usuario.getId()==null)
+		) {
 			throw new BusinessException(SistemaMessageCode.ERRO_LOGIN_DUPLICADO);
 		}
 	}
@@ -247,6 +249,7 @@ public class UsuarioService {
 		}
 
 		AuthDTO authDTO = new AuthDTO();
+		authDTO.setLogin(usuario.getLogin());
 		authDTO.setSenha(senhaAntiga);
 		if (!authService.loginByPassword(usuario, authDTO)) {
 			throw new BusinessException(SistemaMessageCode.ERRO_SENHA_ANTERIOR_INCORRETA);
