@@ -41,4 +41,8 @@ class Grupo implements Serializable {
     @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "grupo", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<GrupoFuncionalidade> grupoFuncionalidades;
+
+    @EqualsAndHashCode.Exclude
+    @OneToMany(mappedBy = "grupo", fetch = FetchType.LAZY)
+    private Set<UsuarioGrupo> usuarioGrupos;
 }

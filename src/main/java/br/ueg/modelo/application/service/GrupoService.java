@@ -1,9 +1,11 @@
 package br.ueg.modelo.application.service;
 
 import br.ueg.modelo.application.dto.FiltroGrupoDTO;
+import br.ueg.modelo.application.dto.GrupoEstatisticasDTO;
 import br.ueg.modelo.application.enums.StatusAtivoInativo;
 import br.ueg.modelo.application.model.Grupo;
 import br.ueg.modelo.application.model.GrupoFuncionalidade;
+import br.ueg.modelo.application.repository.UsuarioGrupoRepository;
 import br.ueg.modelo.comum.exception.BusinessException;
 import br.ueg.modelo.comum.util.CollectionUtil;
 import br.ueg.modelo.comum.util.Util;
@@ -25,6 +27,9 @@ public class GrupoService {
 
     @Autowired
     private GrupoRepository grupoRepository;
+
+    @Autowired
+    private UsuarioGrupoRepository usuarioGrupoRepository;
 
     @Autowired
     private GrupoFuncionalidadeRepository grupoFuncionalidadeRepository;
@@ -226,5 +231,13 @@ public class GrupoService {
      */
     public Grupo getGrupoByIdFetch(final Long id) {
         return grupoRepository.findByIdFetch(id);
+    }
+
+    /**
+     * Relatório de estatisticas de usuários por grupo
+     * @return
+     */
+    public List<GrupoEstatisticasDTO> getGrupoEstatisticas(){
+        return usuarioGrupoRepository.getEstatisticaGrupo();
     }
 }

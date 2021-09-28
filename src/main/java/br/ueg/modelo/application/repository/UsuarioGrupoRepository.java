@@ -1,5 +1,6 @@
 package br.ueg.modelo.application.repository;
 
+import br.ueg.modelo.application.dto.GrupoEstatisticasDTO;
 import br.ueg.modelo.application.enums.StatusAtivoInativo;
 import br.ueg.modelo.application.model.Grupo;
 import br.ueg.modelo.application.model.Usuario;
@@ -28,4 +29,12 @@ public interface UsuarioGrupoRepository extends JpaRepository<UsuarioGrupo, Long
             "where ug.grupo.status=:status " +
             "and ug.grupo.nome=:nome")
     List<Grupo> findByFiltro(StatusAtivoInativo status, String nome);
+
+
+    @Query("select new br.ueg.modelo.application.dto.GrupoEstatisticasDTO(g.id, g.nome, g.descricao,count(ug)) " +
+            " from Grupo g " +
+            " left join g.usuarioGrupos ug " +
+            " group by g.id, g.nome, g.descricao " +
+            " order by g.id")
+    public List<GrupoEstatisticasDTO> getEstatisticaGrupo();
 }

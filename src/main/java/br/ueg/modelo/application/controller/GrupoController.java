@@ -4,6 +4,7 @@ import br.ueg.modelo.api.util.Validation;
 import br.ueg.modelo.application.dto.FiltroGrupoDTO;
 import br.ueg.modelo.application.dto.FiltroUsuarioDTO;
 import br.ueg.modelo.application.dto.GrupoDTO;
+import br.ueg.modelo.application.dto.GrupoEstatisticasDTO;
 import br.ueg.modelo.application.mapper.GrupoMapper;
 import br.ueg.modelo.application.model.Grupo;
 import br.ueg.modelo.application.security.CredentialImpl;
@@ -237,4 +238,17 @@ public class GrupoController extends AbstractController {
         return ResponseEntity.ok().build();
     }
 
+
+    @PreAuthorize("isAuthenticated()")
+    @ApiOperation(value = "Retorna Estatisticas de Usuários pro grupo.", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Success", response = GrupoEstatisticasDTO.class),
+            @ApiResponse(code = 400, message = "Bad Request", response = MessageResponse.class),
+            @ApiResponse(code = 404, message = "Not Found", response = MessageResponse.class)
+    })
+    @GetMapping(path = "/estatisticas",produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<?> getGruposEstatisticas() {
+        List<GrupoEstatisticasDTO> grupoEstatisticas = grupoService.getGrupoEstatisticas();
+        return ResponseEntity.ok(grupoEstatisticas);
+    }
 }
