@@ -12,6 +12,10 @@ import br.ueg.modelo.application.service.GrupoService;
 import br.ueg.modelo.application.service.UsuarioGrupoService;
 import br.ueg.modelo.comum.exception.MessageResponse;
 import io.swagger.annotations.*;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.export.JRXlsExporter;
+import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +23,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Api(tags = "Grupo API")
 @RestController
@@ -250,5 +258,17 @@ public class GrupoController extends AbstractController {
     public ResponseEntity<?> getGruposEstatisticas() {
         List<GrupoEstatisticasDTO> grupoEstatisticas = grupoService.getGrupoEstatisticas();
         return ResponseEntity.ok(grupoEstatisticas);
+    }
+
+    //@PreAuthorize("isAuthenticated()")
+    @ApiOperation(value = "Retorna Relatório de Grupos.", produces = MediaType.APPLICATION_PDF_VALUE)
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Success"),
+            @ApiResponse(code = 400, message = "Bad Request", response = MessageResponse.class),
+            @ApiResponse(code = 404, message = "Not Found", response = MessageResponse.class)
+    })
+    @GetMapping(path = "/relatorio-usuarios",produces = { MediaType.APPLICATION_PDF_VALUE })
+    public ResponseEntity<?> getRelatorioGrupos () throws IOException, JRException {
+        return this.toPDF(grupoService.gerarRelatorio(),"Relatorio-grupo.pdf");
     }
 }

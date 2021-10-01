@@ -22,15 +22,23 @@ import br.ueg.modelo.comum.util.Util;
 import br.ueg.modelo.application.configuration.Constante;
 import br.ueg.modelo.application.exception.SistemaMessageCode;
 import br.ueg.modelo.application.repository.UsuarioRepository;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.sql.DataSource;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Classe de négocio referente a entidade {@link Usuario}.
@@ -50,7 +58,10 @@ public class UsuarioService {
 	@Autowired
 	private AuthService authService;
 
-    /**
+	@Autowired
+	private DataSource dataSource;
+
+	/**
      * Persiste os dados do {@link Usuario}.
      *
      * @param usuario
@@ -384,5 +395,26 @@ public class UsuarioService {
 		if (usuario != null) {
 			throw new BusinessException(SistemaMessageCode.ERRO_CPF_EM_USO);
 		}
+	}
+	public JasperPrint gerarRelatorio(Long idGrupo){
+		try {
+			Connection connection = dataSource.getConnection();
+			Map<String, Object> params = new HashMap<>();
+			params.put("id_grupo",idGrupo);
+			JasperDesign jd =
+					JRXmlLoader.load(
+							this.getClass()
+									.getResourceAsStream("/relatorios/usuarios_por_grupo.jrxml"));
+			JasperReport jasperReport = JasperCompileManager.compileReport(jd);
+			JasperPrint jasperPrint =
+					JasperFillManager.fillReport(jasperReport, params, connection);
+			return jasperPrint;
+			//TODO Não foi feito o tratamento correto ainda
+		} catch (JRException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

@@ -8,6 +8,7 @@
  */
 package br.ueg.modelo.application.controller;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,7 @@ import br.ueg.modelo.application.enums.StatusAtivoInativo;
 import br.ueg.modelo.application.mapper.UsuarioMapper;
 import br.ueg.modelo.application.model.Usuario;
 import br.ueg.modelo.application.service.UsuarioService;
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -257,5 +259,31 @@ public class UsuarioController extends AbstractController {
 		Validation.max("id", id, 99999999L);
 		usuarioService.validarCpf(cpf, id.longValue());
 		return ResponseEntity.ok().build();
+	}
+
+	//@PreAuthorize("isAuthenticated()")
+	@ApiOperation(value = "Retorna Relatório de Grupos.", produces = MediaType.APPLICATION_PDF_VALUE)
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "Success"),
+			@ApiResponse(code = 400, message = "Bad Request", response = MessageResponse.class),
+			@ApiResponse(code = 404, message = "Not Found", response = MessageResponse.class)
+	})
+	@GetMapping(path = "/relatorio-usuarios/{idGrupo}",produces = { MediaType.APPLICATION_PDF_VALUE })
+	public ResponseEntity<?> getRelatorioGrupos (
+			@ApiParam(value = "Código do Usuário") @PathVariable final Long idGrupo
+	) throws IOException, JRException {
+		return this.toPDF(usuarioService.gerarRelatorio(idGrupo),"Relatorio-grupo.pdf");
+	}
+
+	//@PreAuthorize("isAuthenticated()")
+	@ApiOperation(value = "Retorna Relatório de Grupos.", produces = MediaType.APPLICATION_PDF_VALUE)
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "Success"),
+			@ApiResponse(code = 400, message = "Bad Request", response = MessageResponse.class),
+			@ApiResponse(code = 404, message = "Not Found", response = MessageResponse.class)
+	})
+	@GetMapping(path = "/relatorio-usuarios",produces = { MediaType.APPLICATION_PDF_VALUE })
+	public ResponseEntity<?> getRelatorioGrupos2 () throws IOException, JRException {
+		return this.toPDF(usuarioService.gerarRelatorio(null),"Relatorio-grupo2.pdf");
 	}
 }

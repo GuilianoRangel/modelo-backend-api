@@ -13,12 +13,21 @@ import br.ueg.modelo.application.configuration.Constante;
 import br.ueg.modelo.application.exception.SistemaMessageCode;
 import br.ueg.modelo.application.repository.GrupoFuncionalidadeRepository;
 import br.ueg.modelo.application.repository.GrupoRepository;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.export.JRXlsExporter;
+import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.sql.DataSource;
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 
 @Service
@@ -33,6 +42,9 @@ public class GrupoService {
 
     @Autowired
     private GrupoFuncionalidadeRepository grupoFuncionalidadeRepository;
+
+    @Autowired
+    private DataSource dataSource;
 
     /**
      * Retorna uma lista de {@link Grupo} conforme o filtro de pesquisa informado.
@@ -240,4 +252,27 @@ public class GrupoService {
     public List<GrupoEstatisticasDTO> getGrupoEstatisticas(){
         return usuarioGrupoRepository.getEstatisticaGrupo();
     }
+
+    public JasperPrint gerarRelatorio(){
+        try {
+         Connection connection = dataSource.getConnection();
+            Map<String, Object> params = new HashMap<>();
+            JasperDesign jd =
+                    JRXmlLoader.load(
+                            this.getClass()
+                                    .getResourceAsStream("/relatorios/total_usuarios_por_grupo.jrxml"));
+            JasperReport jasperReport = JasperCompileManager.compileReport(jd);
+            JasperPrint jasperPrint =
+                    JasperFillManager.fillReport(jasperReport, params, connection);
+            return jasperPrint;
+            //TODO Não foi feito o tratamento correto ainda
+        } catch (JRException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
 }
