@@ -14,6 +14,7 @@ import br.ueg.modelo.comum.exception.BusinessException;
 import br.ueg.modelo.comum.util.CollectionUtil;
 import br.ueg.modelo.comum.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,10 +27,15 @@ import java.util.Set;
 
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
-public class TipoAmigoService {
+public class TipoAmigoService extends GenericCrudService<TipoAmigo, Long> {
 
     @Autowired
     private TipoAmigoRepository tipoAmigoRepository;
+
+    @Override
+    public JpaRepository getRepository() {
+        return tipoAmigoRepository;
+    }
 
     /**
      * Retorna uma lista de {@link TipoAmigo} conforme o filtro de pesquisa informado.
@@ -67,56 +73,7 @@ public class TipoAmigoService {
         }
     }
 
-    /**
-     * Retorna uma lista de {@link TipoAmigo} cadatrados .
-     *
-     * @return
-     */
-    public List<TipoAmigo> getTodos() {
-        List<TipoAmigo> tipoAmigos = tipoAmigoRepository.findAll();
 
-        if (CollectionUtil.isEmpty(tipoAmigos)) {
-            throw new BusinessException(SistemaMessageCode.ERRO_NENHUM_REGISTRO_ENCONTRADO);
-        }
-        return tipoAmigos;
-    }
-
-    /**
-     * Retorno um a {@link TipoAmigo} pelo Id informado.
-     * @param id - id to tipo Amigo
-     * @return
-     */
-    public TipoAmigo getById(Long id){
-        Optional<TipoAmigo> tipoAmigoOptional = tipoAmigoRepository.findById(id);
-
-        if(!tipoAmigoOptional.isPresent()){
-            throw new BusinessException(SistemaMessageCode.ERRO_NENHUM_REGISTRO_ENCONTRADO);
-        }
-        return tipoAmigoOptional.get();
-    }
-
-    /**
-     * Salva a instânica de {@link TipoAmigo} na base de dados conforme os critérios
-     * especificados na aplicação.
-     *
-     * @param tipoAmigo
-     * @return
-     */
-    public TipoAmigo salvar(TipoAmigo tipoAmigo) {
-        validarCamposObrigatorios(tipoAmigo);
-        validarDuplicidade(tipoAmigo);
-
-        TipoAmigo grupoSaved = tipoAmigoRepository.save(tipoAmigo);
-        return grupoSaved;
-    }
-
-    public TipoAmigo remover(Long id){
-        TipoAmigo tipoAmigo = this.getById(id);
-
-        tipoAmigoRepository.delete(tipoAmigo);
-
-        return tipoAmigo;
-    }
 
 
 
@@ -125,7 +82,7 @@ public class TipoAmigoService {
      *
      * @param tipoAmigo
      */
-    private void validarCamposObrigatorios(final TipoAmigo tipoAmigo) {
+    public void validarCamposObrigatorios(final TipoAmigo tipoAmigo) {
         boolean vazio = Boolean.FALSE;
 
         if (Util.isEmpty(tipoAmigo.getNome())) {
@@ -142,12 +99,16 @@ public class TipoAmigoService {
      *
      * @param tipoAmigo
      */
-    private void validarDuplicidade(final TipoAmigo tipoAmigo) {
+    public void validarDuplicidade(final TipoAmigo tipoAmigo) {
         Long count = tipoAmigoRepository.countByNomeAndNotId(tipoAmigo.getNome(), tipoAmigo.getId());
 
         if (count > BigDecimal.ZERO.longValue()) {
             throw new BusinessException(SistemaMessageCode.ERRO_TIPO_AMIGO_DUPLICADO);
         }
+    }
+
+    @Override
+    protected void inicializarModelParaInclusao(TipoAmigo tipoAmigo) {
     }
 
 }

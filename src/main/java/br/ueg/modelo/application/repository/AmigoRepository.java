@@ -37,7 +37,7 @@ public interface AmigoRepository extends JpaRepository<Amigo, Long>, AmigoReposi
      */
     @Query("SELECT amigo from Amigo amigo " +
             " INNER JOIN FETCH amigo.tipo tipo")
-    public List<Amigo> getTodos();
+    public List<Amigo> findAll();
 
     /**
      * Busca uma {@link Amigo} pelo id Informado
@@ -48,6 +48,6 @@ public interface AmigoRepository extends JpaRepository<Amigo, Long>, AmigoReposi
     @Query("SELECT amigo from Amigo amigo " +
             " INNER JOIN FETCH amigo.tipo tipo " +
             " WHERE amigo.id = :idAmigo ")
-    public Optional<Amigo> findByIdFetch( @Param("idAmigo") final Long idAmigo);
+    public Optional<Amigo> findById( @Param("idAmigo") final Long idAmigo);
 
 }

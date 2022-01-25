@@ -9,6 +9,7 @@ import br.ueg.modelo.comum.exception.BusinessException;
 import br.ueg.modelo.comum.util.CollectionUtil;
 import br.ueg.modelo.comum.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,10 +20,16 @@ import java.util.Optional;
 
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
-public class AmigoService {
+public class AmigoService extends GenericCrudService<Amigo, Long> {
+
 
     @Autowired
     private AmigoRepository amigoRepository;
+
+    @Override
+    public JpaRepository getRepository() {
+        return amigoRepository;
+    }
 
     /**
      * Retorna uma lista de {@link Amigo} conforme o filtro de pesquisa informado.
@@ -72,62 +79,8 @@ public class AmigoService {
         }
     }
 
-    /**
-     * Retorna uma lista de {@link Amigo} cadatrados .
-     *
-     * @return
-     */
-    public List<Amigo> getTodos() {
-        List<Amigo> amigos = amigoRepository.getTodos() ;
-
-        if (CollectionUtil.isEmpty(amigos)) {
-            throw new BusinessException(SistemaMessageCode.ERRO_NENHUM_REGISTRO_ENCONTRADO);
-        }
-        return amigos;
-    }
-
-    /**
-     * Retorno um a {@link Amigo} pelo Id informado.
-     * @param id - id to Amigo
-     * @return
-     */
-    public Amigo getById(Long id){
-        Optional<Amigo> amigoOptional = amigoRepository.findByIdFetch(id);
-
-        if(!amigoOptional.isPresent()){
-            throw new BusinessException(SistemaMessageCode.ERRO_NENHUM_REGISTRO_ENCONTRADO);
-        }
-        return amigoOptional.get();
-    }
-
-    /**
-     * Salva a instânica de {@link Amigo} na base de dados conforme os critérios
-     * especificados na aplicação.
-     *
-     * @param amigo
-     * @return
-     */
-    public Amigo salvar(Amigo amigo) {
-
-        if(amigo.getId() == null && amigo.getAmigo() == null){
-            amigo.setAmigo(StatusSimNao.SIM);
-        }
-
-        validarCamposObrigatorios(amigo);
-        validarDuplicidade(amigo);
-
-        amigoRepository.save(amigo);
-
-        Amigo amigoSaved = this.getById(amigo.getId());
-        return amigoSaved;
-    }
-
-    public Amigo remover(Long id){
-        Amigo amigo = this.getById(id);
-
-        amigoRepository.delete(amigo);
-
-        return amigo;
+    protected void inicializarModelParaInclusao(Amigo amigo){
+        amigo.setAmigo(StatusSimNao.SIM);
     }
 
 
@@ -137,7 +90,7 @@ public class AmigoService {
      *
      * @param amigo
      */
-    private void validarCamposObrigatorios(final Amigo amigo) {
+    public void validarCamposObrigatorios(final Amigo amigo) {
         boolean vazio = Boolean.FALSE;
 
         if (Util.isEmpty(amigo.getNome())) {
@@ -162,7 +115,7 @@ public class AmigoService {
      *
      * @param amigo
      */
-    private void validarDuplicidade(final Amigo amigo) {
+    public void validarDuplicidade(final Amigo amigo) {
         Long count = amigoRepository.countByNomeAndNotId(amigo.getNome(), amigo.getId());
 
         if (count > BigDecimal.ZERO.longValue()) {
